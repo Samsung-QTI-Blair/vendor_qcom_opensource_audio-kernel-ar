@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /* Copyright (c) 2015-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 #include <linux/module.h>
 #include <linux/init.h>
@@ -32,6 +32,14 @@
 #include "wcd-mbhc-legacy.h"
 #include "wcd-mbhc-adc.h"
 #include <asoc/wcd-mbhc-v2-api.h>
+//+P86801AA1, zhouweijie.lux, add, 2025/09/23, add earjack state mode
+#if IS_ENABLED(CONFIG_EARJACK)
+#include <linux/audio.h>
+#endif
+//-P86801AA1, zhouweijie.lux, add, 2025/09/23, add earjack state mode
+//+P86801AA1,peiyuexiang.wt,modify,2023/07/06,add tp earjack_mode
+#include <linux/tp_notifier.h>
+//-P86801AA1,peiyuexiang.wt,modify,2023/07/06,add tp earjack_mode
 
 static const unsigned int mbhc_ext_dev_supported_table[] = {
 	EXTCON_JACK_MICROPHONE,
@@ -43,7 +51,11 @@ static const unsigned int mbhc_ext_dev_supported_table[] = {
 
 struct mutex hphl_pa_lock;
 struct mutex hphr_pa_lock;
-
+//+P86801AA1, zhouweijie.lux, add, 2025/09/23, add earjack state mode
+#if IS_ENABLED(CONFIG_EARJACK)
+static struct audiodevice earjack;
+#endif
+//-P86801AA1, zhouweijie.lux, add, 2025/09/23, add earjack state mode
 void wcd_mbhc_jack_report(struct wcd_mbhc *mbhc,
 			  struct snd_soc_jack *jack, int status, int mask)
 {
@@ -1011,6 +1023,18 @@ static void wcd_mbhc_swch_irq_handler(struct wcd_mbhc *mbhc)
 		pr_debug("%s: button press is canceled\n", __func__);
 
 	WCD_MBHC_REG_READ(WCD_MBHC_MECH_DETECTION_TYPE, detection_type);
+
+ //+P86801AA1,peiyuexiang.wt,modify,2023/07/06,add tp earjack_mode
+	if (detection_type == 0) {
+		lux_earphone_mode_status = 0;
+		earjack_notifier_call_chain_for_tp(EARJACK_PLUG_OUT,NULL);
+		//pr_err("TP_LOG:%s:[tp earjack]EARJACK_PLUG_OUT", __func__);
+	} else if (detection_type != 0) {
+		lux_earphone_mode_status = 1;
+		earjack_notifier_call_chain_for_tp(EARJACK_PLUG_IN,NULL);
+		//pr_err("TP_LOG:%s:[tp earjack]EARJACK_PLUG_IN", __func__);
+	}
+//-P86801AA1,peiyuexiang.wt,modify,2023/07/06,add tp earjack_mode
 
 	/* Set the detection type appropriately */
 	WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_MECH_DETECTION_TYPE,
@@ -2195,6 +2219,13 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 			goto err_ext_dev;
 		}
 	}
+//+P86801AA1, zhouweijie.lux, add, 2025/09/23, add earjack state mode
+	/*add /sys/class/audio/earjack/state*/
+#if IS_ENABLED(CONFIG_EARJACK)
+	earjack.jack = &mbhc->headset_jack;
+	register_audio_earjack(&earjack);
+#endif
+//-P86801AA1, zhouweijie.lux, add, 2025/09/23, add earjack state mode
 	mbhc->deinit_in_progress = false;
 	pr_debug("%s: leave ret %d\n", __func__, ret);
 	return ret;
@@ -2231,7 +2262,12 @@ EXPORT_SYMBOL(wcd_mbhc_init);
 void wcd_mbhc_deinit(struct wcd_mbhc *mbhc)
 {
 	struct snd_soc_component *component = mbhc->component;
-
+//+P86801AA1, zhouweijie.lux, add, 2025/09/23, add earjack state mode
+	/*add /sys/class/audio/earjack/state*/
+#if IS_ENABLED(CONFIG_EARJACK)
+	unregister_audio_earjack(&earjack);
+#endif
+//-P86801AA1, zhouweijie.lux, add, 2025/09/23, add earjack state mode
 	mbhc->mbhc_cb->free_irq(component, mbhc->intr_ids->mbhc_sw_intr, mbhc);
 	mbhc->mbhc_cb->free_irq(component, mbhc->intr_ids->mbhc_btn_press_intr,
 				mbhc);
