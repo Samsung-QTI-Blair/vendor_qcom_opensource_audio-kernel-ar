@@ -90,7 +90,9 @@ extern int smartpa_type;
 #define WCN_CDC_SLIM_RX_CH_MAX 2
 #define WCN_CDC_SLIM_TX_CH_MAX 3
 #define WCN_CDC_SLIM_TX_CH_MAX_LITO 3
-
+/*+P86801AA1, daisiqing.lux, ADD, 2023/05/12, add car AUX*/
+#define MAX_IMPED 60000
+/*+P86801AA1, daisiqing.lux, ADD, 2023/05/12, add car AUX*/
 enum {
 	RX_PATH = 0,
 	TX_PATH,
@@ -237,14 +239,14 @@ static struct wcd_mbhc_config wcd_mbhc_cfg = {
 	.swap_gnd_mic = NULL,
 	.hs_ext_micbias = true,
 	.key_code[0] = KEY_MEDIA,
-	.key_code[1] = KEY_VOICECOMMAND,
-	.key_code[2] = KEY_VOLUMEUP,
-	.key_code[3] = KEY_VOLUMEDOWN,
+	.key_code[1] = KEY_VOLUMEUP,
+	.key_code[2] = KEY_VOLUMEDOWN,
+	.key_code[3] = 0,
 	.key_code[4] = 0,
 	.key_code[5] = 0,
 	.key_code[6] = 0,
 	.key_code[7] = 0,
-	.linein_th = 5000,
+	.linein_th = MAX_IMPED, /*+P86801AA1, daisiqing.wt, ADD, 2023/05/11, add car AUX*/
 	.moisture_en = false,
 	.mbhc_micbias = MIC_BIAS_2,
 	.anc_micbias = MIC_BIAS_2,
@@ -472,8 +474,8 @@ static void *def_wcd_mbhc_cal(void)
 		(sizeof(btn_cfg->_v_btn_low[0]) * btn_cfg->num_btn);
 
 	btn_high[0] = 75;
-	btn_high[1] = 150;
-	btn_high[2] = 237;
+	btn_high[1] = 255;
+	btn_high[2] = 450;
 	btn_high[3] = 500;
 	btn_high[4] = 500;
 	btn_high[5] = 500;
