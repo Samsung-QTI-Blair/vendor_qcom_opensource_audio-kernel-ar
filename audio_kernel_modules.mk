@@ -58,10 +58,6 @@ AUDIO_KERNEL_MODULES += $(KERNEL_MODULES_OUT)/wcd939x_dlkm.ko \
 	$(KERNEL_MODULES_OUT)/wcd939x_slave_dlkm.ko
 endif
 
-ifneq (,$(call is-board-platform-in-list2,pitti volcano))
-AUDIO_KERNEL_MODULES += $(KERNEL_MODULES_OUT)/sdca_registers_dlkm.ko
-endif
-
 ifneq (,$(call is-board-platform-in-list2, pitti))
 AUDIO_KERNEL_MODULES += $(KERNEL_MODULES_OUT)/wsa881x_analog_dlkm.ko \
 	$(KERNEL_MODULES_OUT)/wcd9378_dlkm.ko \

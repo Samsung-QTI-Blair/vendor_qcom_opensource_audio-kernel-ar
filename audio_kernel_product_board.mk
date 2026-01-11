@@ -44,11 +44,6 @@ ifeq (,$(call is-board-platform-in-list2,niobe pitti))
 PRODUCT_PACKAGES += $(KERNEL_MODULES_OUT)/wcd939x_dlkm.ko \
 	$(KERNEL_MODULES_OUT)/wcd939x_slave_dlkm.ko
 endif
-
-ifneq (,$(call is-board-platform-in-list2,pitti volcano))
-PRODUCT_PACKAGES += $(KERNEL_MODULES_OUT)/sdca_registers_dlkm.ko
-endif
-
 ifneq (,$(call is-board-platform-in-list2, pitti))
 PRODUCT_PACKAGES += $(KERNEL_MODULES_OUT)/wsa881x_analog_dlkm.ko \
 	$(KERNEL_MODULES_OUT)/wcd9378_dlkm.ko \
