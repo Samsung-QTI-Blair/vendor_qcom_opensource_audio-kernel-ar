@@ -3229,7 +3229,7 @@ static void wcd937x_dt_parse_micbias_info(struct device *dev,
 		dev_info(dev, "%s: Micbias1 DT property not found\n",
 			__func__);
 	}
-
+	dev_info(dev, "%s: audiock Micbias1  :%d \n",__func__,prop_val);
 	/* MB2 */
 	if (of_find_property(dev->of_node, "qcom,cdc-micbias2-mv",
 				    NULL)) {
@@ -3242,7 +3242,7 @@ static void wcd937x_dt_parse_micbias_info(struct device *dev,
 		dev_info(dev, "%s: Micbias2 DT property not found\n",
 			__func__);
 	}
-
+	dev_info(dev, "%s: audiock Micbias2  :%d \n",__func__,prop_val);
 	/* MB3 */
 	if (of_find_property(dev->of_node, "qcom,cdc-micbias3-mv",
 				    NULL)) {
@@ -3255,6 +3255,7 @@ static void wcd937x_dt_parse_micbias_info(struct device *dev,
 		dev_info(dev, "%s: Micbias3 DT property not found\n",
 			__func__);
 	}
+	dev_info(dev, "%s: audiock Micbias3  :%d \n",__func__,prop_val);
 }
 
 static int wcd937x_reset_low(struct device *dev)
