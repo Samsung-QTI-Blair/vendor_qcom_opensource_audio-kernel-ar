@@ -49,6 +49,9 @@ static const unsigned int mbhc_ext_dev_supported_table[] = {
 	EXTCON_NONE,
 };
 
+//+P230725-07531,zhangtao10.lux,add,2023/08/13,add mbhc debug log
+#define DEBUG_LOG_PRINTK 1
+//-P230725-07531,zhangtao10.lux,add,2023/08/13,add mbhc debug log
 struct mutex hphl_pa_lock;
 struct mutex hphr_pa_lock;
 //+P86801AA1, zhouweijie.lux, add, 2025/09/23, add earjack state mode
@@ -152,7 +155,11 @@ void wcd_enable_curr_micbias(const struct wcd_mbhc *mbhc,
 	if (mbhc->mbhc_cb->mbhc_micbias_control)
 		return;
 
+#ifdef DEBUG_LOG_PRINTK
+	printk("%s: enter, cs_mb_en: %d\n", __func__, cs_mb_en);
+#else
 	pr_debug("%s: enter, cs_mb_en: %d\n", __func__, cs_mb_en);
+#endif
 
 	switch (cs_mb_en) {
 	case WCD_MBHC_EN_CS:
@@ -183,7 +190,11 @@ void wcd_enable_curr_micbias(const struct wcd_mbhc *mbhc,
 		WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_MICB_CTRL, 0);
 		break;
 	default:
+#ifdef DEBUG_LOG_PRINTK
+		printk("%s: Invalid parameter", __func__);
+#else
 		pr_debug("%s: Invalid parameter", __func__);
+#endif
 		break;
 	}
 
@@ -242,8 +253,13 @@ static int wcd_event_notify(struct notifier_block *self, unsigned long val,
 	bool micbias1 = false;
 	u8 fsm_en = 0;
 
+#ifdef DEBUG_LOG_PRINTK
+	printk("%s: event %s (%d)\n", __func__,
+		 wcd_mbhc_get_event_string(event), event);
+#else
 	pr_debug("%s: event %s (%d)\n", __func__,
 		 wcd_mbhc_get_event_string(event), event);
+#endif
 	if (mbhc->mbhc_cb->micbias_enable_status) {
 		micbias2 = mbhc->mbhc_cb->micbias_enable_status(mbhc,
 								MIC_BIAS_2);
@@ -571,8 +587,13 @@ void wcd_mbhc_hs_elec_irq(struct wcd_mbhc *mbhc, int irq_type,
 		return;
 	}
 
+#ifdef DEBUG_LOG_PRINTK
+	printk("%s: irq: %d, enable: %d, intr_status:%lu\n",
+		 __func__, irq, enable, mbhc->intr_status);
+#else
 	pr_debug("%s: irq: %d, enable: %d, intr_status:%lu\n",
 		 __func__, irq, enable, mbhc->intr_status);
+#endif
 	if ((test_bit(irq_type, &mbhc->intr_status)) != enable) {
 		mbhc->mbhc_cb->irq_control(mbhc->component, irq, enable);
 		if (enable)
@@ -595,6 +616,13 @@ void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 
 	pr_debug("%s: enter insertion %d hph_status %x\n",
 		 __func__, insertion, mbhc->hph_status);
+#ifdef DEBUG_LOG_PRINTK
+	printk("%s: enter insertion %d jack_type %d hph_status %x\n",
+		 __func__, insertion, jack_type, mbhc->hph_status);
+#else
+	pr_debug("%s: enter insertion %d jack_type %d hph_status %x\n",
+		 __func__, insertion, jack_type, mbhc->hph_status);
+#endif
 	if (!insertion) {
 		/* Report removal */
 		mbhc->hph_status &= ~jack_type;
@@ -631,8 +659,13 @@ void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 
 		mbhc->hph_type = WCD_MBHC_HPH_NONE;
 		mbhc->zl = mbhc->zr = 0;
+#ifdef DEBUG_LOG_PRINTK
+		printk("%s: Reporting removal %d(%x)\n", __func__,
+			 jack_type, mbhc->hph_status);
+#else
 		pr_debug("%s: Reporting removal %d(%x)\n", __func__,
 			 jack_type, mbhc->hph_status);
+#endif
 		wcd_mbhc_jack_report(mbhc, &mbhc->headset_jack,
 				mbhc->hph_status, WCD_MBHC_JACK_MASK);
 		wcd_mbhc_set_and_turnoff_hph_padac(mbhc);
@@ -810,7 +843,11 @@ void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 				    WCD_MBHC_JACK_MASK);
 		wcd_mbhc_clr_and_turnon_hph_padac(mbhc);
 	}
+#ifdef DEBUG_LOG_PRINTK
+	printk("%s: leave hph_status %x\n", __func__, mbhc->hph_status);
+#else
 	pr_debug("%s: leave hph_status %x\n", __func__, mbhc->hph_status);
+#endif
 }
 EXPORT_SYMBOL(wcd_mbhc_report_plug);
 
@@ -866,8 +903,13 @@ void wcd_mbhc_find_plug_and_report(struct wcd_mbhc *mbhc,
 		return;
 	}
 
+#ifdef DEBUG_LOG_PRINTK
+	printk("%s: enter current_plug(%d) new_plug(%d)\n",
+		 __func__, mbhc->current_plug, plug_type);
+#else
 	pr_debug("%s: enter current_plug(%d) new_plug(%d)\n",
 		 __func__, mbhc->current_plug, plug_type);
+#endif
 
 	WCD_MBHC_RSC_ASSERT_LOCKED(mbhc);
 
@@ -1040,8 +1082,13 @@ static void wcd_mbhc_swch_irq_handler(struct wcd_mbhc *mbhc)
 	WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_MECH_DETECTION_TYPE,
 				 !detection_type);
 
+#ifdef DEBUG_LOG_PRINTK
+	printk("%s: mbhc->current_plug: %d detection_type: %d\n", __func__,
+			mbhc->current_plug, detection_type);
+#else
 	pr_debug("%s: mbhc->current_plug: %d detection_type: %d\n", __func__,
 			mbhc->current_plug, detection_type);
+#endif
 	if (mbhc->mbhc_fn->wcd_cancel_hs_detect_plug)
 		mbhc->mbhc_fn->wcd_cancel_hs_detect_plug(mbhc,
 						&mbhc->correct_plug_swch);
@@ -1203,8 +1250,11 @@ static irqreturn_t wcd_mbhc_mech_plug_detect_irq(int irq, void *data)
 	int r = IRQ_HANDLED;
 	struct wcd_mbhc *mbhc = data;
 
+#ifdef DEBUG_LOG_PRINTK
+	printk("%s: enter\n", __func__);
+#else
 	pr_debug("%s: enter\n", __func__);
-
+#endif
 	if (mbhc == NULL) {
 		pr_err("%s: NULL irq data\n", __func__);
 		return IRQ_NONE;
@@ -1326,7 +1376,11 @@ static irqreturn_t wcd_mbhc_btn_press_handler(int irq, void *data)
 
 	mbhc->is_btn_press = true;
 	msec_val = jiffies_to_msecs(jiffies - mbhc->jiffies_atreport);
+#ifdef DEBUG_LOG_PRINTK
+	printk("%s: msec_val = %ld\n", __func__, msec_val);
+#else
 	pr_debug("%s: msec_val = %ld\n", __func__, msec_val);
+#endif
 	if (msec_val < MBHC_BUTTON_PRESS_THRESHOLD_MIN) {
 		pr_debug("%s: Too short, ignore button press\n", __func__);
 		goto done;
@@ -1727,8 +1781,13 @@ static int wcd_mbhc_set_keycode(struct wcd_mbhc *mbhc)
 			input_set_capability(
 				mbhc->button_jack.jack->input_dev,
 				EV_KEY, btn_key_code[i]);
+#ifdef DEBUG_LOG_PRINTK
+			printk("%s: set btn%d key code:%d\n", __func__,
+				i, btn_key_code[i]);
+#else
 			pr_debug("%s: set btn%d key code:%d\n", __func__,
 				i, btn_key_code[i]);
+#endif
 		}
 	}
 	if (btn_key_code[0])
