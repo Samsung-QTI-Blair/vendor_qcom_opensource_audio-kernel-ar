@@ -612,11 +612,14 @@ void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 	bool is_pa_on = false;
 	u8 fsm_en = 0;
 	int extdev_type = 0;
+	bool is_lineout = false; //P230811-07919,zhangtao10.lux,modify,2023/09/09,prohibit recognition as lineout
 
 	WCD_MBHC_RSC_ASSERT_LOCKED(mbhc);
-
-	pr_debug("%s: enter insertion %d hph_status %x\n",
-		 __func__, insertion, mbhc->hph_status);
+//+P86801AA1, daisiqing.lux, ADD, 2023/05/11, add car AUX
+	if (jack_type == SND_JACK_LINEOUT) {
+		jack_type = SND_JACK_HEADPHONE;
+	}
+//+P86801AA1, daisiqing.lux, ADD, 2023/05/11, add car AUX
 #ifdef DEBUG_LOG_PRINTK
 	printk("%s: enter insertion %d jack_type %d hph_status %x\n",
 		 __func__, insertion, jack_type, mbhc->hph_status);
@@ -784,7 +787,7 @@ void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 						 fsm_en);
 			if ((mbhc->zl > mbhc->mbhc_cfg->linein_th) &&
 				(mbhc->zr > mbhc->mbhc_cfg->linein_th) &&
-				(jack_type == SND_JACK_HEADPHONE)) {
+				(jack_type == SND_JACK_HEADPHONE) && is_lineout) {
 				jack_type = SND_JACK_LINEOUT;
 				mbhc->force_linein = true;
 				mbhc->current_plug = MBHC_PLUG_TYPE_HIGH_HPH;
@@ -812,7 +815,7 @@ void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 		 * will not be correct resulting in lineout detected
 		 * as headphone.
 		 */
-		if ((is_pa_on) && mbhc->force_linein == true) {
+		if ((is_pa_on) && mbhc->force_linein == true && is_lineout) {
 			jack_type = SND_JACK_LINEOUT;
 			mbhc->current_plug = MBHC_PLUG_TYPE_HIGH_HPH;
 			if (mbhc->hph_status) {
@@ -1153,11 +1156,6 @@ static void wcd_mbhc_swch_irq_handler(struct wcd_mbhc *mbhc)
 			mbhc->mbhc_fn->wcd_mbhc_detect_plug_type(mbhc);
 	} else if ((mbhc->current_plug != MBHC_PLUG_TYPE_NONE)
 			&& !detection_type) {
-		/*Disable micbias2 before disable L_DET*/
-		if (mbhc->mbhc_cb->mbhc_force_micbias_disable)
-			mbhc->mbhc_cb->mbhc_force_micbias_disable(
-					component, MIC_BIAS_2);
-
 		/* Disable external voltage source to micbias if present */
 		if (mbhc->mbhc_cb->enable_mb_source)
 			mbhc->mbhc_cb->enable_mb_source(mbhc, false);
