@@ -626,6 +626,7 @@ static struct snd_soc_dai_link msm_tdm_be_dai_links[] = {
 		.ignore_suspend = 1,
 		SND_SOC_DAILINK_REG(pri_tdm_tx_0),
 	},
+#ifndef CONFIG_SND_SOC_FS19XX
 	{
 		.name = LPASS_BE_SEC_TDM_RX_0,
 		.stream_name = LPASS_BE_SEC_TDM_RX_0,
@@ -647,6 +648,7 @@ static struct snd_soc_dai_link msm_tdm_be_dai_links[] = {
 		.ignore_suspend = 1,
 		SND_SOC_DAILINK_REG(sec_tdm_tx_0),
 	},
+#endif
 	{
 		.name = LPASS_BE_TERT_TDM_RX_0,
 		.stream_name = LPASS_BE_TERT_TDM_RX_0,
@@ -690,6 +692,56 @@ static struct snd_soc_dai_link msm_tdm_be_dai_links[] = {
 		SND_SOC_DAILINK_REG(quat_tdm_tx_0),
 	},
 };
+
+#ifdef CONFIG_SND_SOC_FS19XX
+static struct snd_soc_dai_link msm_tdm_fsm_be_dai_links[] = {
+	{
+		.name = LPASS_BE_SEC_TDM_RX_0,
+		.stream_name = LPASS_BE_SEC_TDM_RX_0,
+		.playback_only = 1,
+		.trigger = {SND_SOC_DPCM_TRIGGER_POST,
+			SND_SOC_DPCM_TRIGGER_POST},
+		.ops = &msm_common_be_ops,
+		.ignore_suspend = 1,
+		.ignore_pmdown_time = 1,
+		SND_SOC_DAILINK_REG(sec_tdm_fsm_rx_0),
+	},
+	{
+		.name = LPASS_BE_SEC_TDM_TX_0,
+		.stream_name = LPASS_BE_SEC_TDM_TX_0,
+		.capture_only = 1,
+		.trigger = {SND_SOC_DPCM_TRIGGER_POST,
+			SND_SOC_DPCM_TRIGGER_POST},
+		.ops = &msm_common_be_ops,
+		.ignore_suspend = 1,
+		SND_SOC_DAILINK_REG(sec_tdm_fsm_tx_0),
+	},
+};
+
+static struct snd_soc_dai_link msm_tdm_aw_be_dai_links[] = {
+	{
+		.name = LPASS_BE_SEC_TDM_RX_0,
+		.stream_name = LPASS_BE_SEC_TDM_RX_0,
+		.playback_only = 1,
+		.trigger = {SND_SOC_DPCM_TRIGGER_POST,
+			SND_SOC_DPCM_TRIGGER_POST},
+		.ops = &msm_common_be_ops,
+		.ignore_suspend = 1,
+		.ignore_pmdown_time = 1,
+		SND_SOC_DAILINK_REG(sec_tdm_rx_0),
+	},
+	{
+		.name = LPASS_BE_SEC_TDM_TX_0,
+		.stream_name = LPASS_BE_SEC_TDM_TX_0,
+		.capture_only = 1,
+		.trigger = {SND_SOC_DPCM_TRIGGER_POST,
+			SND_SOC_DPCM_TRIGGER_POST},
+		.ops = &msm_common_be_ops,
+		.ignore_suspend = 1,
+		SND_SOC_DAILINK_REG(sec_tdm_tx_0),
+	},
+};
+#endif
 
 static struct snd_soc_dai_link msm_wcn_btfm_be_dai_links[] = {
 	{
@@ -1014,6 +1066,9 @@ static struct snd_soc_dai_link msm_holi_dai_links[
 			ARRAY_SIZE(msm_rx_tx_cdc_dma_be_dai_links) +
 			ARRAY_SIZE(msm_va_cdc_dma_be_dai_links) +
 			ARRAY_SIZE(msm_wcn_btfm_be_dai_links) +
+#ifdef CONFIG_SND_SOC_FS19XX
+			ARRAY_SIZE(msm_tdm_fsm_be_dai_links) +
+#endif
 			ARRAY_SIZE(msm_tdm_be_dai_links)];
 
 static int msm_populate_dai_link_component_of_node(
@@ -1267,6 +1322,21 @@ static struct snd_soc_card *populate_snd_card_dailinks(struct device *dev)
 				sizeof(msm_tdm_be_dai_links));
 			total_links +=
 				ARRAY_SIZE(msm_tdm_be_dai_links);
+#ifdef CONFIG_SND_SOC_FS19XX
+			if(smartpa_type == FS16XX) {
+				memcpy(msm_holi_dai_links + total_links,
+					msm_tdm_fsm_be_dai_links,
+					sizeof(msm_tdm_fsm_be_dai_links));
+				total_links +=
+					ARRAY_SIZE(msm_tdm_fsm_be_dai_links);
+			} else {
+				memcpy(msm_holi_dai_links + total_links,
+					msm_tdm_aw_be_dai_links,
+					sizeof(msm_tdm_aw_be_dai_links));
+				total_links +=
+					ARRAY_SIZE(msm_tdm_aw_be_dai_links);
+			}
+#endif
 		}
 
 		rc = of_property_read_u32(dev->of_node, "qcom,wcn-btfm",

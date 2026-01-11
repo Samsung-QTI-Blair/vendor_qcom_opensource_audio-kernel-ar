@@ -37,6 +37,7 @@ def define_blair(t, v, lt=None):
             "wcd937x_slave_dlkm",
             "wcd938x_dlkm",
             "wcd938x_slave_dlkm",
+            "fs19xx_dlkm",
         ],
         config_options = [
             "CONFIG_SND_SOC_HOLI",
@@ -49,6 +50,7 @@ def define_blair(t, v, lt=None):
             "CONFIG_SND_SOC_WCD_IRQ",
             "CONFIG_SND_SOC_WCD9XXX_V2",
             "CONFIG_SND_SOC_WCD_MBHC_ADC",
+            "CONFIG_MI2S_BOLERO_V2_1",
         ],
         lunch_target = lt,
     )

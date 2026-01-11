@@ -470,3 +470,15 @@ audio_modules.register(
     config_option = "CONFIG_SND_SOC_WCD9378_SLAVE",
     srcs = ["wcd9378-slave.c"]
 )
+
+# >>>> FS19XX MODULE <<<<
+audio_modules.register(
+    name = "fs19xx_dlkm",
+    path = ASOC_CODECS_PATH + "/fs19xx",
+    config_option = "CONFIG_SND_SOC_FS19XX",
+    srcs = [
+        "frsm-amp-drv.c",
+        "frsm-i2c.c",
+        "frsm-i2cd-2in1.c",
+    ]
+)

@@ -261,9 +261,25 @@ SND_SOC_DAILINK_DEFS(sec_tdm_rx_0,
 	DAILINK_COMP_ARRAY(COMP_CODEC("msm-stub-codec.1", "msm-stub-rx")),
 	DAILINK_COMP_ARRAY(COMP_PLATFORM("snd-soc-dummy")));
 
+SND_SOC_DAILINK_DEFS(sec_tdm_fsm_rx_0,
+	DAILINK_COMP_ARRAY(COMP_CPU("snd-soc-dummy-dai")),
+	DAILINK_COMP_ARRAY(COMP_CODEC("frsm_i2c-3", "frsm-codec-aif-3"),
+						COMP_CODEC("frsm_i2c-4", "frsm-codec-aif-4"),
+						COMP_CODEC("frsm_i2c-2", "frsm-codec-aif-2"),
+						COMP_CODEC("frsm_i2c-1", "frsm-codec-aif-1")),
+	DAILINK_COMP_ARRAY(COMP_PLATFORM("snd-soc-dummy")));
+
 SND_SOC_DAILINK_DEFS(sec_tdm_tx_0,
 	DAILINK_COMP_ARRAY(COMP_CPU("snd-soc-dummy-dai")),
 	DAILINK_COMP_ARRAY(COMP_CODEC("msm-stub-codec.1", "msm-stub-tx")),
+	DAILINK_COMP_ARRAY(COMP_PLATFORM("snd-soc-dummy")));
+
+SND_SOC_DAILINK_DEFS(sec_tdm_fsm_tx_0,
+	DAILINK_COMP_ARRAY(COMP_CPU("snd-soc-dummy-dai")),
+	DAILINK_COMP_ARRAY(COMP_CODEC("frsm_i2c-3", "frsm-codec-aif-3"),
+						COMP_CODEC("frsm_i2c-4", "frsm-codec-aif-4"),
+						COMP_CODEC("frsm_i2c-2", "frsm-codec-aif-2"),
+						COMP_CODEC("frsm_i2c-1", "frsm-codec-aif-1")),
 	DAILINK_COMP_ARRAY(COMP_PLATFORM("snd-soc-dummy")));
 
 SND_SOC_DAILINK_DEFS(tert_tdm_rx_0,

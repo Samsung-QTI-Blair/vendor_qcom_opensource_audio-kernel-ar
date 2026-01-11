@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2021-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/gpio.h>
@@ -257,10 +257,25 @@ static int get_mi2s_tdm_auxpcm_intf_index(const char *stream_name)
 
 	if (strnstr(stream_name, "LPAIF_RXTX", strlen(stream_name)))
 		return QUAT_MI2S_TDM_AUXPCM;
-	else if (strnstr(stream_name, "LPAIF_WSA", strlen(stream_name)))
+	else if (strnstr(stream_name, "LPAIF_WSA", strlen(stream_name))) {
+#ifdef CONFIG_MI2S_BOLERO_V2_1
+		if (strnstr(stream_name, "PRIMARY", strlen(stream_name)))
+			return SEC_MI2S_TDM_AUXPCM;
+		if (strnstr(stream_name, "SECONDARY", strlen(stream_name)))
+			return TER_MI2S_TDM_AUXPCM;
+#else
 		return SEN_MI2S_TDM_AUXPCM;
-	else if (strnstr(stream_name, "LPAIF_VA", strlen(stream_name)))
+#endif
+	}
+	else if (strnstr(stream_name, "LPAIF_VA", strlen(stream_name))) {
+#ifdef CONFIG_MI2S_BOLERO_V2_1
+		pr_debug("%s: stream_name %s",__func__,stream_name);
+                if (strnstr(stream_name, "PRIMARY", strlen(stream_name)))
+                        return PRI_MI2S_TDM_AUXPCM;
+#else
 		return QUIN_MI2S_TDM_AUXPCM;
+#endif
+        }
 	else if (strnstr(stream_name, "LPAIF_AUD", strlen(stream_name))){
 		if (strnstr(stream_name, "PRIMARY", strlen(stream_name)))
 			return SEP_MI2S_TDM_AUXPCM;
