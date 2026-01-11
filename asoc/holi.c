@@ -43,6 +43,10 @@
 #include "msm_common.h"
 #include "msm_holi_dailink.h"
 
+//+P86801AA1, zhouweijie.lux, ADD, 2022/05/12, get smartpa info for compatibility
+#include <linux/hardware_info.h>
+extern int smartpa_type;
+//-P86801AA1, zhouweijie.lux, ADD, 2022/05/12, get smartpa info for compatibility
 #define DRV_NAME "holi-asoc-snd"
 #define __CHIPSET__ "HOLI "
 #define MSM_DAILINK_NAME(name) (__CHIPSET__#name)
