@@ -42,7 +42,6 @@
 #include "msm-audio-defs.h"
 #include "msm_common.h"
 #include "msm_holi_dailink.h"
-
 //+P86801AA1, zhouweijie.lux, ADD, 2022/05/12, get smartpa info for compatibility
 #include <linux/hardware_info.h>
 extern int smartpa_type;
@@ -78,7 +77,7 @@ extern int smartpa_type;
 #define CODEC_EXT_CLK_RATE          9600000
 #define ADSP_STATE_READY_TIMEOUT_MS 3000
 #define DEV_NAME_STR_LEN            32
-#define WCD_MBHC_HS_V_MAX           1600
+#define WCD_MBHC_HS_V_MAX           1700  //P230829-01324, zhangtao10.lux,modify,2023/08/30,HS_VREF 1.7V
 
 #define TDM_CHANNEL_MAX		8
 #define DEV_NAME_STR_LEN	32
