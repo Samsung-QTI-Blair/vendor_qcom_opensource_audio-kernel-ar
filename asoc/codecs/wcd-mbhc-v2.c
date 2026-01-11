@@ -48,10 +48,12 @@ static const unsigned int mbhc_ext_dev_supported_table[] = {
 	EXTCON_MECHANICAL,
 	EXTCON_NONE,
 };
-
 //+P230725-07531,zhangtao10.lux,add,2023/08/13,add mbhc debug log
 #define DEBUG_LOG_PRINTK 1
 //-P230725-07531,zhangtao10.lux,add,2023/08/13,add mbhc debug log
+//+P86801AA1-12927,zhangtao10.lux,add,2023/08/30,increace headset debounce
+#define ADD_DEBOUNCE_TIME 1
+//-P86801AA1-12927,zhangtao10.lux,add,2023/08/30,increace headset debounce
 struct mutex hphl_pa_lock;
 struct mutex hphr_pa_lock;
 //+P86801AA1, zhouweijie.lux, add, 2025/09/23, add earjack state mode
@@ -586,7 +588,6 @@ void wcd_mbhc_hs_elec_irq(struct wcd_mbhc *mbhc, int irq_type,
 			__func__, irq_type, enable);
 		return;
 	}
-
 #ifdef DEBUG_LOG_PRINTK
 	printk("%s: irq: %d, enable: %d, intr_status:%lu\n",
 		 __func__, irq, enable, mbhc->intr_status);
@@ -1081,7 +1082,17 @@ static void wcd_mbhc_swch_irq_handler(struct wcd_mbhc *mbhc)
 	/* Set the detection type appropriately */
 	WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_MECH_DETECTION_TYPE,
 				 !detection_type);
-
+//+P86801AA1-12927,zhangtao10.lux,add,2023/08/30,increace headset debounce
+#ifdef ADD_DEBOUNCE_TIME
+	if (detection_type) {
+		pr_info("%s: Headphone plug in, the debounce time is set to 0x6", __func__);
+		WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_INSREM_DBNC, 6);
+	} else {
+		pr_info("%s: Headphone plug out, the debounce time is set to 0xB", __func__);
+		WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_INSREM_DBNC, 0xB);
+	}
+#endif
+//-P86801AA1-12927,zhangtao10.lux,add,2023/08/30,increace headset debounce
 #ifdef DEBUG_LOG_PRINTK
 	printk("%s: mbhc->current_plug: %d detection_type: %d\n", __func__,
 			mbhc->current_plug, detection_type);
@@ -1624,8 +1635,15 @@ static int wcd_mbhc_initialise(struct wcd_mbhc *mbhc)
 		/* Insertion debounce set to 48ms */
 		WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_INSREM_DBNC, 4);
 	} else {
+//+P86801AA1-12927,zhangtao10.lux,add,2023/08/30,increace headset debounce
+#ifdef ADD_DEBOUNCE_TIME
+		/* Insertion debounce set to 512ms */
+		WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_INSREM_DBNC, 0xB);
+#else
 		/* Insertion debounce set to 96ms */
 		WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_INSREM_DBNC, 6);
+#endif
+//-P86801AA1-12927,zhangtao10.lux,add,2023/08/30,increace headset debounce
 	}
 
 	/* Button Debounce set to 16ms */
