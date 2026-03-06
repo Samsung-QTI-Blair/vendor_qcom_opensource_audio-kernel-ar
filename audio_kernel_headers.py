@@ -26,14 +26,23 @@ def run_headers_install(verbose, gen_dir, headers_install, unifdef, prefix, h):
 
     out_h = os.path.join(gen_dir, h[len(prefix):])
     (out_h_dirname, out_h_basename) = os.path.split(out_h)
+    if out_h_dirname and not os.path.exists(out_h_dirname):
+        os.makedirs(out_h_dirname, exist_ok=True)
+    work_dir = os.path.join(gen_dir, '.headers_install_work')
+    scripts_dir = os.path.join(work_dir, 'scripts')
+    os.makedirs(scripts_dir, exist_ok=True)
+    local_unifdef = os.path.join(scripts_dir, 'unifdef')
+    if os.path.lexists(local_unifdef):
+        os.remove(local_unifdef)
+    os.symlink(os.path.abspath(unifdef), local_unifdef)
     env = os.environ.copy()
-    env["LOC_UNIFDEF"] = unifdef
-    cmd = ["sh", headers_install, h, out_h]
+    env["LOC_UNIFDEF"] = os.path.abspath(unifdef)
+    cmd = ["sh", os.path.abspath(headers_install), os.path.abspath(h), os.path.abspath(out_h)]
 
     if verbose:
         print('run_headers_install: cmd is %s' % cmd)
 
-    result = subprocess.call(cmd, env=env)
+    result = subprocess.call(cmd, env=env, cwd=work_dir)
 
     if result != 0:
         print('error: run_headers_install: cmd %s failed %d' % (cmd, result))
